@@ -1,8 +1,9 @@
-const User = require('../models/User')
-const logger = require('../config/logger')
+import { Request, Response } from 'express';
+import User from '../models/User';
+import logger from '../config/logger';
 
 const userController = {
-  async getAllUsers(req, res) {
+  async getAllUsers(req: Request, res: Response): Promise<Response | void> {
     try {
       const users = await User.findAll()
       
@@ -13,7 +14,7 @@ const userController = {
         count: users.length,
         data: users
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error in getAllUsers controller:', error)
       
       res.status(500).json({
@@ -24,11 +25,11 @@ const userController = {
     }
   },
 
-  async getUserById(req, res) {
+  async getUserById(req: Request, res: Response): Promise<Response | void> {
     try {
       const { id } = req.params
       
-      if (!id || isNaN(id)) {
+      if (!id || isNaN(Number(id))) {
         return res.status(400).json({
           success: false,
           message: 'Invalid user ID provided'
@@ -50,7 +51,7 @@ const userController = {
         success: true,
         data: user
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error in getUserById controller:', error)
       
       res.status(500).json({
@@ -61,7 +62,7 @@ const userController = {
     }
   },
 
-  async createUser(req, res) {
+  async createUser(req: Request, res: Response): Promise<Response | void> {
     try {
       const { firebase_uid, email, display_name } = req.body
 
@@ -89,7 +90,7 @@ const userController = {
         message: 'User created successfully',
         data: newUser
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error in createUser controller:', error)
       
       res.status(500).json({
@@ -101,4 +102,4 @@ const userController = {
   }
 }
 
-module.exports = userController
+export default userController;

@@ -1,8 +1,9 @@
-const db = require('../config/database')
-const logger = require('../config/logger')
+import db from '../config/database';
+import logger from '../config/logger';
+import { User as UserType } from '../types/database';
 
 class User {
-  static async createTable() {
+  static async createTable(): Promise<void> {
     const query = `
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -24,7 +25,7 @@ class User {
     }
   }
 
-  static async findAll() {
+  static async findAll(): Promise<UserType[]> {
     const query = 'SELECT * FROM users ORDER BY created_at DESC'
     
     try {
@@ -36,19 +37,31 @@ class User {
     }
   }
 
-  static async findByFirebaseUid(firebaseUid) {
+  static async findById(id: number): Promise<UserType | null> {
+    const query = 'SELECT * FROM users WHERE id = $1'
+    
+    try {
+      const result = await db.query(query, [id])
+      return result.rows[0] || null
+    } catch (error) {
+      logger.error('Error finding user by ID:', error)
+      throw error
+    }
+  }
+
+  static async findByFirebaseUid(firebaseUid: string): Promise<UserType | null> {
     const query = 'SELECT * FROM users WHERE firebase_uid = $1'
     
     try {
       const result = await db.query(query, [firebaseUid])
-      return result.rows[0]
+      return result.rows[0] || null
     } catch (error) {
       logger.error('Error finding user by Firebase UID:', error)
       throw error
     }
   }
 
-  static async create(userData) {
+  static async create(userData: { firebase_uid: string; email?: string; display_name?: string }): Promise<UserType> {
     const { firebase_uid, email, display_name } = userData
     const query = `
       INSERT INTO users (firebase_uid, email, display_name)
@@ -66,7 +79,7 @@ class User {
     }
   }
 
-  static async update(id, userData) {
+  static async update(id: number, userData: { email?: string; display_name?: string; subscription_status?: string }): Promise<UserType | null> {
     const { email, display_name, subscription_status } = userData
     const query = `
       UPDATE users 
@@ -87,7 +100,7 @@ class User {
     }
   }
 
-  static async delete(id) {
+  static async delete(id: number): Promise<UserType | null> {
     const query = 'DELETE FROM users WHERE id = $1 RETURNING *'
     
     try {
@@ -100,4 +113,4 @@ class User {
   }
 }
 
-module.exports = User
+export default User;
