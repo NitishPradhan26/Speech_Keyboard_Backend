@@ -4,14 +4,14 @@
   "description": "Backend server for speech-to-text mobile application",
   "main": "dist/app.js",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "tsc --build",
     "start": "node -r tsconfig-paths/register dist/app.js",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "dev:watch": "nodemon --exec ts-node src/app.ts",
     "test": "jest",
     "lint": "eslint src/ --ext .ts",
     "lint:fix": "eslint src/ --ext .ts --fix",
-    "clean": "rm -rf dist"
+    "clean": "tsc --build --clean"
   },
   "keywords": [
     "speech-to-text",
