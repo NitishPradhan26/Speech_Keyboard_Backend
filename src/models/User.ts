@@ -61,14 +61,14 @@ class User {
     }
   }
 
-  static async create(userData: { firebase_uid: string; email?: string; display_name?: string }): Promise<UserType> {
+  static async create(userData: { firebase_uid: string; email?: string;}): Promise<UserType> {
+    logger.info('User Post Endpoint: Creating user:', userData)
     const { firebase_uid, email } = userData
     const query = `
       INSERT INTO users (apple_uid, email)
       VALUES ($1, $2)
       RETURNING *
     `
-    
     try {
       const result = await db.query(query, [firebase_uid, email])
       logger.info('User created successfully:', result.rows[0].id)
