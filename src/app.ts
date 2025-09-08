@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 
 import logger from './config/logger';
 import userRoutes from './routes/userRoutes';
+import transcriptRoutes from './routes/transcriptRoutes';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/users', userRoutes);
+app.use('/api/transcripts', transcriptRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ 

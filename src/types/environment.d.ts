@@ -10,5 +10,6 @@ declare namespace NodeJS {
     DB_URL: string;
     DATABASE_URL: string;
     LOG_LEVEL: 'error' | 'warn' | 'info' | 'debug';
+    OPENAI_API_KEY: string;
   }
 }
