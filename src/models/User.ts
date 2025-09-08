@@ -50,7 +50,7 @@ class User {
   }
 
   static async findByFirebaseUid(firebaseUid: string): Promise<UserType | null> {
-    const query = 'SELECT * FROM users WHERE firebase_uid = $1'
+    const query = 'SELECT * FROM users WHERE apple_uid = $1'
     
     try {
       const result = await db.query(query, [firebaseUid])
@@ -62,15 +62,15 @@ class User {
   }
 
   static async create(userData: { firebase_uid: string; email?: string; display_name?: string }): Promise<UserType> {
-    const { firebase_uid, email, display_name } = userData
+    const { firebase_uid, email } = userData
     const query = `
-      INSERT INTO users (firebase_uid, email, display_name)
-      VALUES ($1, $2, $3)
+      INSERT INTO users (apple_uid, email)
+      VALUES ($1, $2)
       RETURNING *
     `
     
     try {
-      const result = await db.query(query, [firebase_uid, email, display_name])
+      const result = await db.query(query, [firebase_uid, email])
       logger.info('User created successfully:', result.rows[0].id)
       return result.rows[0]
     } catch (error) {
@@ -79,20 +79,19 @@ class User {
     }
   }
 
-  static async update(id: number, userData: { email?: string; display_name?: string; subscription_status?: string }): Promise<UserType | null> {
-    const { email, display_name, subscription_status } = userData
+  static async update(id: number, userData: { email?: string; subscription_status?: string }): Promise<UserType | null> {
+    const { email, subscription_status } = userData
     const query = `
       UPDATE users 
       SET email = COALESCE($2, email),
-          display_name = COALESCE($3, display_name),
-          subscription_status = COALESCE($4, subscription_status),
+          subscription_status = COALESCE($3, subscription_status),
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
       RETURNING *
     `
     
     try {
-      const result = await db.query(query, [id, email, display_name, subscription_status])
+      const result = await db.query(query, [id, email, subscription_status])
       return result.rows[0]
     } catch (error) {
       logger.error('Error updating user:', error)
