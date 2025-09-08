@@ -32,6 +32,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/transcripts', transcriptRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
+  logger.info('Health check endpoint accessed');
   res.status(200).json({ 
     status: 'OK', 
     message: 'Speech Keyboard Backend is running',
