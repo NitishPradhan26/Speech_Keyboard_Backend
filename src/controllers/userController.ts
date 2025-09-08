@@ -63,8 +63,10 @@ const userController = {
   },
 
   async createUser(req: Request, res: Response): Promise<Response | void> {
+
+    logger.info('User Post Endpoint: Creating user:', req.body)
     try {
-      const { firebase_uid, email, display_name } = req.body
+      const { firebase_uid, email} = req.body
 
       if (!firebase_uid) {
         return res.status(400).json({
@@ -81,7 +83,7 @@ const userController = {
         })
       }
 
-      const newUser = await User.create({ firebase_uid, email, display_name })
+      const newUser = await User.create({ firebase_uid, email})
       
       logger.info(`Created new user with ID: ${newUser.id}`)
       
