@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import transcriptController from '../../controllers/transcriptController';
 import { transcriptionProvider, textProcessor } from '../../config/serviceProvider';
+import Transcript from '../../models/Transcript';
 
 // Mock the service providers
 jest.mock('../../config/serviceProvider', () => ({
@@ -18,6 +19,14 @@ jest.mock('../../config/serviceProvider', () => ({
 jest.mock('../../config/logger', () => ({
   info: jest.fn(),
   error: jest.fn(),
+}));
+
+// Mock Transcript model
+jest.mock('../../models/Transcript', () => ({
+  __esModule: true,
+  default: {
+    create: jest.fn(),
+  },
 }));
 
 describe('TranscriptController - transcribeAndCorrect', () => {
@@ -41,6 +50,17 @@ describe('TranscriptController - transcribeAndCorrect', () => {
     
     // Make status return the response object for chaining
     statusSpy.mockReturnValue(mockRes);
+    
+    // Setup Transcript.create mock to return successful creation
+    (Transcript.create as jest.Mock).mockResolvedValue({
+      id: 123,
+      user_id: 1,
+      text_raw: 'Hello world',
+      text_final: 'Hello, world!',
+      duration_secs: 5.2,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
   });
 
   describe('1. Input Validation', () => {
@@ -48,7 +68,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
       // Arrange
       mockReq = {
         file: undefined, // No file uploaded
-        body: {},
+        body: { user_id: 1 },
       };
 
       // Act
@@ -59,6 +79,28 @@ describe('TranscriptController - transcribeAndCorrect', () => {
       expect(jsonSpy).toHaveBeenCalledWith({
         success: false,
         message: 'No audio file provided',
+      });
+    });
+
+    it('should return 400 when no user_id provided', async () => {
+      // Arrange
+      mockReq = {
+        file: {
+          buffer: Buffer.from('mock audio data'),
+          originalname: 'test.wav',
+          mimetype: 'audio/wav',
+        } as Express.Multer.File,
+        body: {}, // No user_id
+      };
+
+      // Act
+      await transcriptController.transcribeAndCorrect(mockReq as Request, mockRes as Response);
+
+      // Assert
+      expect(statusSpy).toHaveBeenCalledWith(400);
+      expect(jsonSpy).toHaveBeenCalledWith({
+        success: false,
+        message: 'User ID is required',
       });
     });
   });
@@ -73,7 +115,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           originalname: 'test.wav',
           mimetype: 'audio/wav',
         } as Express.Multer.File,
-        body: {},
+        body: { user_id: 1 },
       };
 
       const mockTranscriptionResult = {
@@ -111,7 +153,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           originalname: 'test.wav',
           mimetype: 'audio/wav',
         } as Express.Multer.File,
-        body: {},
+        body: { user_id: 1 },
       };
 
       const mockTranscriptionResult = {
@@ -148,7 +190,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           originalname: 'test.wav',
           mimetype: 'audio/wav',
         } as Express.Multer.File,
-        body: {},
+        body: { user_id: 1 },
       };
 
       const mockTranscriptionResult = {
@@ -175,11 +217,53 @@ describe('TranscriptController - transcribeAndCorrect', () => {
       expect(jsonSpy).toHaveBeenCalledWith({
         success: true,
         data: {
+          transcriptId: 123,
           rawTranscript: 'Hello world',
           finalText: 'Hello, world!',
           duration: 5.2,
           promptUsed: 'default prompt',
         },
+      });
+    });
+
+    it('should save transcript to database', async () => {
+      // Arrange
+      mockReq = {
+        file: {
+          buffer: Buffer.from('mock audio data'),
+          originalname: 'test.wav',
+          mimetype: 'audio/wav',
+        } as Express.Multer.File,
+        body: { user_id: 1 },
+      };
+
+      const mockTranscriptionResult = {
+        success: true,
+        transcript: 'Hello world',
+        duration: 5.2,
+      };
+
+      const mockCorrectionResult = {
+        success: true,
+        processedText: 'Hello, world!',
+        originalText: 'Hello world',
+        promptUsed: 'default prompt',
+      };
+
+      (transcriptionProvider.transcribe as jest.Mock).mockResolvedValue(mockTranscriptionResult);
+      (textProcessor.processText as jest.Mock).mockResolvedValue(mockCorrectionResult);
+
+      // Act
+      await transcriptController.transcribeAndCorrect(mockReq as Request, mockRes as Response);
+
+      // Assert
+      expect(Transcript.create).toHaveBeenCalledWith({
+        user_id: 1,
+        audio_url: undefined,
+        duration_secs: 5.2,
+        text_raw: 'Hello world',
+        text_final: 'Hello, world!',
+        prompt_used: 'default prompt'
       });
     });
   });
@@ -193,7 +277,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           originalname: 'test.wav',
           mimetype: 'audio/wav',
         } as Express.Multer.File,
-        body: {},
+        body: { user_id: 1 },
       };
 
       const mockTranscriptionResult = {
@@ -226,7 +310,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           originalname: 'test.wav',
           mimetype: 'audio/wav',
         } as Express.Multer.File,
-        body: {},
+        body: { user_id: 1 },
       };
 
       const mockTranscriptionResult = {
@@ -252,6 +336,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
       expect(jsonSpy).toHaveBeenCalledWith({
         success: true,
         data: {
+          transcriptId: 123,
           rawTranscript: 'Hello world',
           finalText: 'Hello world', // Falls back to raw transcript
           duration: 5.2,
@@ -272,6 +357,7 @@ describe('TranscriptController - transcribeAndCorrect', () => {
           mimetype: 'audio/wav',
         } as Express.Multer.File,
         body: {
+          user_id: 1,
           prompt: 'Custom grammar correction prompt',
         },
       };
