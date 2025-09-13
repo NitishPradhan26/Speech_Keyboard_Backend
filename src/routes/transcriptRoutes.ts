@@ -10,6 +10,7 @@ router.post('/transcribeAndCorrect',
 );
 
 // CRUD endpoints that exist in the controller
+router.get('/user/:userId', transcriptController.getTranscriptsByUserId);
 router.get('/:id', transcriptController.getTranscriptById);
 router.post('/', transcriptController.createTranscript);
 router.put('/:id', transcriptController.updateTranscript);
