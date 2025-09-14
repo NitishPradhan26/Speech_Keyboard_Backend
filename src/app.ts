@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import logger from './config/logger';
 import userRoutes from './routes/userRoutes';
 import transcriptRoutes from './routes/transcriptRoutes';
+import promptRoutes from './routes/promptRoutes';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/users', userRoutes);
 app.use('/api/transcripts', transcriptRoutes);
+app.use('/api/prompts', promptRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   logger.info('Health check endpoint accessed');
