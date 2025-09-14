@@ -23,9 +23,7 @@ class Prompt {
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
-        is_default BOOLEAN DEFAULT false,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        is_default BOOLEAN DEFAULT false
       )
     `;
     
@@ -39,7 +37,7 @@ class Prompt {
   }
 
   static async findAll(): Promise<PromptType[]> {
-    const query = 'SELECT * FROM prompts ORDER BY created_at DESC';
+    const query = 'SELECT * FROM prompts ORDER BY id DESC';
     
     try {
       const result = await db.query(query);
@@ -63,7 +61,7 @@ class Prompt {
   }
 
   static async findByUserId(userId: number): Promise<PromptType[]> {
-    const query = 'SELECT * FROM prompts WHERE user_id = $1 ORDER BY created_at DESC';
+    const query = 'SELECT * FROM prompts WHERE user_id = $1 ORDER BY id DESC';
     
     try {
       const result = await db.query(query, [userId]);
@@ -75,7 +73,7 @@ class Prompt {
   }
 
   static async findDefaultPrompts(): Promise<PromptType[]> {
-    const query = 'SELECT * FROM prompts WHERE is_default = true ORDER BY created_at DESC';
+    const query = 'SELECT * FROM prompts WHERE is_default = true ORDER BY id DESC';
     
     try {
       const result = await db.query(query);
@@ -110,8 +108,7 @@ class Prompt {
       UPDATE prompts 
       SET title = COALESCE($2, title),
           content = COALESCE($3, content),
-          is_default = COALESCE($4, is_default),
-          updated_at = CURRENT_TIMESTAMP
+          is_default = COALESCE($4, is_default)
       WHERE id = $1
       RETURNING *
     `;

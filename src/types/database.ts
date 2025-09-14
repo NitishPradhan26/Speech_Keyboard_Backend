@@ -14,8 +14,6 @@ export interface Prompt {
   title: string;
   content: string;
   is_default: boolean;
-  created_at?: Date;
-  updated_at?: Date;
 }
 
 export interface Transcript {
