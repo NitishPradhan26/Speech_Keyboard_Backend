@@ -5,7 +5,6 @@ export interface User {
   created_at: Date;
   updated_at: Date;
   subscription_status: 'free' | 'premium' | 'trial';
-  credits_balance: number;
 }
 
 export interface Prompt {
@@ -26,6 +25,15 @@ export interface Transcript {
   prompt_used?: string;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface Subscription {
+  id: number;
+  user_id: number;
+  status: 'free' | 'premium';
+  balance: number;
+  expiry_date?: Date;
+  subscribe_date: Date;
 }
 
 export interface DatabaseConfig {

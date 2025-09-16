@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
+import subscriptionService from '../services/SubscriptionService';
 import logger from '../config/logger';
 
 const userController = {
@@ -63,8 +64,8 @@ const userController = {
   },
 
   async createUser(req: Request, res: Response): Promise<Response | void> {
-
     logger.info('User Post Endpoint: Creating user:', req.body)
+    
     try {
       const { firebase_uid, email} = req.body
 
@@ -83,13 +84,17 @@ const userController = {
         })
       }
 
+      // Create user first
       const newUser = await User.create({ firebase_uid, email})
       
-      logger.info(`Created new user with ID: ${newUser.id}`)
+      // Automatically create free subscription for new user
+      await subscriptionService.createFreeSubscription(newUser.id)
+      
+      logger.info(`Created new user with ID: ${newUser.id} and free subscription`)
       
       res.status(201).json({
         success: true,
-        message: 'User created successfully',
+        message: 'User created successfully with free subscription',
         data: newUser
       })
     } catch (error: any) {

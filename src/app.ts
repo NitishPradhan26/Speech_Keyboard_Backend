@@ -8,6 +8,7 @@ import logger from './config/logger';
 import userRoutes from './routes/userRoutes';
 import transcriptRoutes from './routes/transcriptRoutes';
 import promptRoutes from './routes/promptRoutes';
+import subscriptionRoutes from './routes/subscriptionRoutes';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/transcripts', transcriptRoutes);
 app.use('/api/prompts', promptRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   logger.info('Health check endpoint accessed');
